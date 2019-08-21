@@ -1,0 +1,1 @@
+protoc -I protobufs --go_out=plugins=grpc:client/proto/ --go_out=plugins=grpc:server/proto/ ./protobufs/commands.proto

