@@ -1,2 +1,2 @@
 # Apollo
-Apollo is a fully featured remote administration tool written in GoLang
+Apollo is a remote administration tool written in GoLang
