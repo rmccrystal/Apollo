@@ -1,6 +1,7 @@
 package networking
 
 import (
+	"../message"
 	"bufio"
 	"fmt"
 	"net"
@@ -22,16 +23,13 @@ func Connect(ip string, port uint16) error {
 	}
 }
 
-func messageLoop(conn net.Conn) error {
+func messageLoop(conn net.Conn) error {	// Note: Only returns an error if there is something wrong with the communication itself
+										// Will not return an error due to malformed data
 	reader := bufio.NewReader(conn)
-	bytes, err := reader.ReadBytes('\n')
+	buffer, err := reader.ReadBytes('\n')	// Read message until we encounter a new line
 	if err != nil {
 		return err
 	}
-
-	
-}
-
-func handleMessage(messageId byte, buffer []byte) {
-
+	go message.HandleMessage(buffer)	// Handle the message TODO: Add xor encryption
+	return nil
 }
