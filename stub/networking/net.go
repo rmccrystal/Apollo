@@ -4,16 +4,17 @@ import (
 	"../message"
 	"bufio"
 	"fmt"
+	"log"
 	"net"
 )
 
-var ServerConn net.Conn
-
 func Connect(ip string, port uint16) error {
+	log.Printf("Attempting to connect to %s:%d", ip, port)
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
 		return err
 	}
+	log.Printf("Successfully connected to %s:%d", ip, port)
 
 	for {
 		err = messageLoop(conn)
@@ -30,6 +31,9 @@ func messageLoop(conn net.Conn) error {	// Note: Only returns an error if there 
 	if err != nil {
 		return err
 	}
-	go message.HandleMessage(buffer)	// Handle the message TODO: Add xor encryption
+	_, err = conn.Write(message.HandleMessage(buffer))		// Write the response we get from message.HandleMessage()
+	if err != nil {		// Return an error if we can't write to the connection
+		return err
+	}
 	return nil
 }
