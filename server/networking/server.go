@@ -28,6 +28,7 @@ func Listen(port int) error {
 
 func handleConnection(conn net.Conn) {
 	log.Printf("New connection: %s", conn.RemoteAddr())
-	client.ConnectedClients = append(client.ConnectedClients, client.Client{Conn:conn})		// Append the new client to the client list
-	conn.
+	newClient := client.Client{Conn:conn, IP:conn.RemoteAddr().String()}
+	client.ConnectedClients[newClient] = true		// Append the new client to the client list
+	newClient.OnConnect()		// Run the OnConnect function
 }

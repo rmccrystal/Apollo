@@ -1,8 +1,8 @@
-package message
+package types
 
 const (
 	// Requests
-	REQ_PING = iota
+	REQ_PING = iota + 1
 	REQ_SYS_INFO
 	REQ_DOWNLOAD_EXECUTE
 
