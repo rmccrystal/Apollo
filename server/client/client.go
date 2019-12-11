@@ -29,6 +29,7 @@ func (c Client) OnConnect() {
 
 // Send data and wait for a response
 func (c Client) Send(b []byte) ([]byte, error) {
+	log.Printf("Sending %v to client %s", b, c.IP)
 	b = append(b, '\n')	// Add a \n to the data so the client knows the message is finished
 
 	c.mux.Lock()			// Lock the mutex so only one thread can access the client at once
@@ -51,7 +52,9 @@ func (c Client) Send(b []byte) ([]byte, error) {
 		return nil, err
 	}
 	// If we successfully read from the client, return the response and no error
-	return resp, nil
+	// The last item of the response is cut off because it is a \n
+	log.Printf("Received %v from client %s", resp[:len(resp)-1], c.IP)
+	return resp[:len(resp)-1], nil
 }
 
 // Send a message to the client with a message ID and data

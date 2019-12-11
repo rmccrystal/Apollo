@@ -31,7 +31,7 @@ func messageLoop(conn net.Conn) error {	// Note: Only returns an error if there 
 	if err != nil {
 		return err
 	}
-	_, err = conn.Write(message.HandleMessage(buffer))		// Write the response we get from message.HandleMessage()
+	_, err = conn.Write(append(message.HandleMessage(buffer), '\n'))		// Write the response we get from message.HandleMessage()
 	if err != nil {		// Return an error if we can't write to the connection
 		return err
 	}
