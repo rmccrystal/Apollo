@@ -3,7 +3,10 @@ package client
 import (
 	"./types"
 	"bufio"
+	"bytes"
+	"encoding/gob"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -100,4 +103,27 @@ func (c Client) Ping() error {
 		return errors.New("invalid response type")
 	}
 	return nil	// If we get here we successfully pinged the client
+}
+
+/*
+ * Returns a struct containing basic system info of the client
+ */
+func (c Client) GetBasicSystemInfo() (types.SystemInfo, error) {
+	responseID, responseData, err := c.SendMessage(types.REQ_BASIC_SYSTEM_INFO, nil)
+	if err != nil {		// Return the error if there is one
+		return types.SystemInfo{}, err
+	}
+	if responseID != types.RES_BASIC_SYSTEM_INFO {
+		log.Printf("For some reason, we did not get a repsonse when getting basic system info from client %s and instead got a response with ID %d", c.IP, responseID)
+		return types.SystemInfo{}, errors.New("invalid response type")
+	}
+	gobBuff := bytes.NewBuffer(responseData)
+	tmpStruct := new(types.SystemInfo)
+	gobObj := gob.NewDecoder(gobBuff)
+	err = gobObj.Decode(tmpStruct)
+	if err != nil {
+		log.Printf("error decoding gob buffer")
+		return types.SystemInfo{}, errors.New(fmt.Sprintf("error deserilzing data: %s", err))
+	}
+	return *tmpStruct, nil
 }
