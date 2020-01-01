@@ -27,9 +27,9 @@ func HandleMessage(buffer []byte) []byte {
 	/// Basic system info
 	if messageID == types.REQ_BASIC_SYSTEM_INFO {
 		responseBuffer := new(bytes.Buffer)		// Create a buffer for our encoding
-		responseBuffer.Write([]byte{byte(types.RES_BASIC_SYSTEM_INFO)})		// Add the repsonse ID to the beginning of the response
+		responseBuffer.Write([]byte{byte(types.RES_BASIC_SYSTEM_INFO)})		// Add the response ID to the beginning of the response
 		gobObj := gob.NewEncoder(responseBuffer)		// Create the gob encoder
-		err := gobObj.Encode(modules.GetSystemInfo())
+		err := gobObj.Encode(modules.GetBasicSystemInfo())
 		if err != nil {		// Return a gob encoding error if we can't encode
 			return []byte{byte(types.ERR_GOB_ENCODING)}
 		}

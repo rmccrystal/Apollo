@@ -16,18 +16,27 @@ import (
 var ConnectedClients = make(map[Client]bool)		// Client set
 
 type Client struct {
-	Conn		net.Conn
-	mux			sync.Mutex
-	IP			string
+	Conn			net.Conn
+	mux				sync.Mutex
+	IP				string
+	BasicSystemInfo	types.BasicSystemInfo
+	SystemInfo		types.SystemInfo
 }
 
 func (c Client) OnConnect() {
-	err := c.Ping()		// Ping the client to see if it is working
+	ms, err := c.Ping()		// Ping the client to see if it is working
 	if err != nil {
 		log.Printf("Error pinging client with IP %s: %s", c.IP, err)
-		delete(ConnectedClients, c)		// If it doesn't ping, remove the client
+		return
 	}
-	log.Printf("New client connected with IP %s", c.IP)
+	ConnectedClients[c] = true		// Append the new client to the client list
+	log.Printf("New client connected with IP %s and ping %d", c.IP, ms)
+}
+
+// Closes the socket and removes the client from the client list
+func (c Client) Remove() {
+	_ = c.Conn.Close()
+	delete(ConnectedClients, c)
 }
 
 // Send data and wait for a response
@@ -40,7 +49,7 @@ func (c Client) Send(b []byte) ([]byte, error) {
 	_, err := c.Conn.Write(b)	// Try to write data
 	if err != nil {		// If there is an error, print an error and delete the client
 		log.Printf("Error writing to client %s: %s Removing the client", c.IP, err)
-		delete(ConnectedClients, c)
+		c.Remove()
 		return nil, err
 	}
 
@@ -51,7 +60,7 @@ func (c Client) Send(b []byte) ([]byte, error) {
 	if err != nil {
 		// For some reason there was an error reading
 		log.Printf("Error reading from client %s: %s Removing the client", c.IP, err)
-		delete(ConnectedClients, c)	// Remove the client
+		c.Remove()	// Remove the client
 		return nil, err
 	}
 	// If we successfully read from the client, return the response and no error
@@ -61,7 +70,7 @@ func (c Client) Send(b []byte) ([]byte, error) {
 }
 
 // Send a message to the client with a message ID and data
-// Returns the respnose ID, the response data, and any error
+// Returns the response ID, the response data, and any error
 // Note that although the messageID is an int this function
 // will return an error if it doesn't cast to a byte
 func (c Client) SendMessage(messageID int, data []byte) (responseID byte, responseData []byte, err error) {
@@ -75,7 +84,7 @@ func (c Client) SendMessage(messageID int, data []byte) (responseID byte, respon
 	if err != nil {		// Return the error if we get one
 		return 0, nil, err
 	}
-	// If we don't get any errors, return the first byte of the repsonse as the responseID and the rest as the responseData
+	// If we don't get any errors, return the first byte of the response as the responseID and the rest as the responseData
 	// If the response is only one byte, return just the response ID
 	if len(resp) == 0 {	// If the length of the response is 0, return nothing
 		return 0, nil, nil
@@ -89,41 +98,56 @@ func (c Client) SendMessage(messageID int, data []byte) (responseID byte, respon
 
 /*
  * the Client.Ping() function pings the client.
- * If the ping is successful, the function will return nil
- * If it is not, it will return an error and the client will be reomved
+ * If the ping is successful, the function will return the time in ms it took to ping the client and nil
+ * If it is not, it will return an error and the client will be removed
  * from the client list in the Client.Send() function
  */
-func (c Client) Ping() error {
+func (c Client) Ping() (int, error) {
+	start := time.Now()		// Time how long the ping takes
 	responseID, _, err := c.SendMessage(types.REQ_PING, nil)
-	if err != nil {		// If there is an error pinging the client, return it
-		return err
+	timeMs := int(time.Now().Sub(start).Nanoseconds() / 1000000)
+	if err != nil {		// If there is an error pinging the client, remove the client and return the error
+		c.Remove()
+		return 0, err
 	}
 	if responseID != types.RES_PING {		// Return an error if we don't get a RES_PING response
 		log.Printf("For some reason, we did not get a ping repsonse when pinging client %s and instead got a response with ID %d", c.IP, responseID)
-		return errors.New("invalid response type")
+		c.Remove()
+		return 0, errors.New("invalid response type")
 	}
-	return nil	// If we get here we successfully pinged the client
+	return timeMs, nil	// If we get here we successfully pinged the client
 }
 
 /*
  * Returns a struct containing basic system info of the client
  */
-func (c Client) GetBasicSystemInfo() (types.SystemInfo, error) {
-	responseID, responseData, err := c.SendMessage(types.REQ_BASIC_SYSTEM_INFO, nil)
+func (c Client) GetBasicSystemInfo() (types.BasicSystemInfo, error) {
+	if c.BasicSystemInfo != (types.BasicSystemInfo{}) {		// check if we have basic system info cached already
+		if _, err := c.Ping(); err != nil {					// Ping the client in case it is offline
+			return types.BasicSystemInfo{}, err				// If it is offline, return the error
+		}
+		return c.BasicSystemInfo, nil				// We have the system info cached, so just return that
+	}
+	responseID, responseData, err := c.SendMessage(types.REQ_BASIC_SYSTEM_INFO, nil)	// Send the request
 	if err != nil {		// Return the error if there is one
-		return types.SystemInfo{}, err
+		return types.BasicSystemInfo{}, err
+	}
+	if responseID == types.ERR_GOB_ENCODING {		// Return an error if there is an error with gob encoding on the client
+		log.Printf("Error encoding buffer on client with IP %s", c.IP)
+		return types.BasicSystemInfo{}, errors.New("error encoding struct on client")
 	}
 	if responseID != types.RES_BASIC_SYSTEM_INFO {
 		log.Printf("For some reason, we did not get a repsonse when getting basic system info from client %s and instead got a response with ID %d", c.IP, responseID)
-		return types.SystemInfo{}, errors.New("invalid response type")
+		return types.BasicSystemInfo{}, errors.New("invalid response type")
 	}
 	gobBuff := bytes.NewBuffer(responseData)
-	tmpStruct := new(types.SystemInfo)
+	tmpStruct := new(types.BasicSystemInfo)
 	gobObj := gob.NewDecoder(gobBuff)
 	err = gobObj.Decode(tmpStruct)
 	if err != nil {
 		log.Printf("error decoding gob buffer")
-		return types.SystemInfo{}, errors.New(fmt.Sprintf("error deserilzing data: %s", err))
+		return types.BasicSystemInfo{}, errors.New(fmt.Sprintf("error deserilzing data: %s", err))
 	}
+	c.BasicSystemInfo = *tmpStruct		// Cache the response so we don't have to request it again
 	return *tmpStruct, nil
 }
