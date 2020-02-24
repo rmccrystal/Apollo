@@ -3,12 +3,12 @@ package networking
 import (
 	"../client"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net"
 )
 
 func Listen(port int) error {
-	log.Printf("Attempting to listen on port %d", port)
+	log.Debugf("Attempting to listen on port %d", port)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))	// Start listening
 	if err != nil {
 		return err
@@ -19,7 +19,7 @@ func Listen(port int) error {
 	for {
 		conn, err := lis.Accept()
 		if err != nil {
-			log.Printf("Error accepting connection from %s", conn.RemoteAddr())
+			log.Errorf("Error accepting connection from %s", conn.RemoteAddr())
 			continue
 		}
 		go handleConnection(conn)
@@ -27,8 +27,7 @@ func Listen(port int) error {
 }
 
 func handleConnection(conn net.Conn) {
-	log.Printf("New connection: %s", conn.RemoteAddr())
+	log.Debugf("New connection: %s", conn.RemoteAddr())
 	newClient := client.Client{Conn:conn, IP:conn.RemoteAddr().String()}
-	client.ConnectedClients[newClient] = true		// Append the new client to the client list
 	newClient.OnConnect()		// Run the OnConnect function
 }

@@ -1,6 +1,15 @@
 package types
 
-import "time"
+import (
+	"encoding/gob"
+	"time"
+)
+
+// Registers all of the data types for gob
+func Register() {
+	gob.Register(BasicSystemInfo{})
+	gob.Register(SystemInfo{})
+}
 
 // Basic system info
 type BasicSystemInfo struct {
@@ -11,11 +20,6 @@ type BasicSystemInfo struct {
 	Language		int
 }
 
-type Display struct {		// Used for Displays in SystemInfo
-	Width	int		// Width in pixels
-	Height	int
-	RefreshRate	int
-}
 type SystemInfo struct {
 	Username		string
 	InstallDate		time.Time

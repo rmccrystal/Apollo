@@ -1,0 +1,5 @@
+github.com/StackExchange/wmi
+github.com/shirou/gopsutil/cpu
+github.com/shirou/gopsutil/mem
+
+github.com/sirupsen/logrus
