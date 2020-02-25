@@ -20,7 +20,11 @@ func HandleMessage(messageID byte, message interface{}) (responseID byte, respon
 
 	/// Basic system info
 	if messageID == types.REQ_BASIC_SYSTEM_INFO {
-		return types.RES_BASIC_SYSTEM_INFO, modules.GetSystemInfo()
+		return types.RES_BASIC_SYSTEM_INFO, modules.GetBasicSystemInfo()
+	}
+
+	if messageID == types.REQ_SYSTEM_INFO {
+		return types.RES_SYSTEM_INFO, modules.GetSystemInfo()
 	}
 
 	// The message wasn't handled for some reason

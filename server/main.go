@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.InfoLevel)
 	types.Register()
 	port := 4422
 	err := networking.Listen(port)

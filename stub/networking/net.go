@@ -3,7 +3,6 @@ package networking
 import (
 	"../message"
 	"../message/types"
-	"bufio"
 	"bytes"
 	"encoding/gob"
 	"fmt"
@@ -29,14 +28,17 @@ func Connect(ip string, port uint16) error {
 
 func messageLoop(conn net.Conn) error {	// Note: Only returns an error if there is something wrong with the communication itself
 										// Will not return an error due to malformed data
-	reader := bufio.NewReader(conn)
-	buffer, err := reader.ReadBytes('\n')	// Read message until we encounter a new line
+	buffer := make([]byte, 4096)
+	n, err := conn.Read(buffer)
+	buffer = buffer[:n]
+	log.Printf("read %v", buffer)
 	if err != nil {
+		log.Printf("error reading: %s", err)
 		return err
 	}
-	buffer = buffer[:len(buffer)-1]		// Remove the last \n from the buffer
 	packet := handlePacket(buffer)
-	_, err = conn.Write(append(packet, '\n'))		// Write the response we get from message.HandleMessage()
+	log.Printf("sending %v", packet)
+	_, err = conn.Write(packet)		// Write the response we get from message.HandleMessage()
 	if err != nil {		// Return an error if we can't write to the connection
 		return err
 	}
