@@ -18,6 +18,7 @@ type BasicSystemInfo struct {
 	Username		string
 	Administrator	bool
 	Language		int
+	MachineID		string
 }
 
 type SystemInfo struct {
@@ -39,4 +40,6 @@ type SystemInfo struct {
 	GPU				string
 
 	Device			string		// Info about device name and model
+
+	MachineID		string
 }

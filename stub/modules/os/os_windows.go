@@ -5,6 +5,7 @@ package os
 import (
 	"fmt"
 	"github.com/StackExchange/wmi"
+	"github.com/denisbrodbeck/machineid"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/mem"
 	"golang.org/x/sys/windows/registry"
@@ -211,4 +212,16 @@ func Device() string {
 	ci := computerinfo[0]		// Shorthand for our respons
 	return fmt.Sprintf("%s %s", ci.Vendor, ci.Name)
 
+}
+
+/*
+ * Returns a unique ID for the machine which can be used to
+ * uniquely identify the computer
+ */
+func MachineID() string {
+	id, err := machineid.ID()
+	if err != nil {
+		return fmt.Sprintf("error getting machine id: %s", err)
+	}
+	return id
 }

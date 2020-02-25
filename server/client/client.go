@@ -41,7 +41,7 @@ func (c Client) OnConnect() {
 
 	basicSystemInfo, err := c.GetBasicSystemInfo()	// Cache the basic system info
 	if err == nil {
-		log.Printf("New client connected with IP %s and username %s", c.IP, basicSystemInfo.Username)
+		log.Printf("New client connected with IP %s and username %s (%s)", c.IP, basicSystemInfo.Username, basicSystemInfo.MachineID)
 	}
 
 }

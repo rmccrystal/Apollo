@@ -15,6 +15,7 @@ func GetBasicSystemInfo() types.BasicSystemInfo {
 		Username:      os.Username(),
 		Administrator: os.Administrator(),
 		Language:      os.Language(),
+		MachineID:	   os.MachineID(),
 	}
 }
 
@@ -35,5 +36,6 @@ func GetSystemInfo() types.SystemInfo {
 		CPU:                   os.Cpu(),
 		GPU:                   os.Gpu(),
 		Device:				   os.Device(),
+		MachineID:			   os.MachineID(),
 	}
 }
