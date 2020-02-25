@@ -9,6 +9,17 @@ import (
 func Register() {
 	gob.Register(BasicSystemInfo{})
 	gob.Register(SystemInfo{})
+	gob.Register(RunCommandRequest{})
+	gob.Register(RunCommandReponse{})
+}
+
+type RunCommandRequest struct {
+	Command	  string
+	Backround bool	// If this is true the command will be ran in the background
+}
+type RunCommandReponse struct {
+	Success	 bool
+	Response string
 }
 
 // Basic system info

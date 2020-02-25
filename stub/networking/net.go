@@ -59,19 +59,14 @@ func handlePacket(buffer []byte) []byte {
 	var response interface{}
 
 	if len(buffer) == 1 {	// If we have just a message ID
-		responseID, response = message.HandleMessage(messageID, nil)
+		responseID, response = message.HandleMessage(messageID)
 	} else {	// Else we must decode the buffer
 		buff := bytes.NewBuffer(buffer[1:]) // Don't use the first element of the buffer
 		decoder := gob.NewDecoder(buff)
 		var msg interface{} // The structured message being sent
-		err := decoder.Decode(&msg)
-		if err != nil {
-			log.Printf("error decoding: %s", err)
-			return []byte{byte(types.ERR_GOB)}
-		}
 
 		fmt.Printf("%s", msg)	// TODO: remove
-		responseID, response = message.HandleMessage(messageID, msg)
+		responseID, response = message.HandleMessageWithPayload(messageID, decoder)
 	}
 
 	if response == nil {	// If there is no actual response data

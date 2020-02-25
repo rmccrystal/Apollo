@@ -7,11 +7,14 @@ import (
 /*
  * the Client.Ping() function pings the client.
  * If the ping is successful, the function will return nil
- * If it is not, it will return an error and the client will be reomved
- * from the client list in the Client.Send() function
+ * If it is not, it will return an error and the client will be removed
  */
 func (c Client) Ping() error {
-	return c.SendMessage(types.REQ_PING, nil, nil, types.RES_PING)
+	err := c.SendMessage(types.REQ_PING, nil, nil, types.RES_PING)
+	if err != nil {
+		c.Delete()
+	}
+	return err
 }
 
 /*
@@ -36,4 +39,18 @@ func (c Client) GetSystemInfo() (types.SystemInfo, error) {
 		c.SystemInfo = response
 	}
 	return response, err
+}
+
+/*
+ * Runs a console command
+ * if `background` is true the command will be ran in the background and it will be immidately returned
+ */
+func (c Client) RunCommand(command string, background bool) (success bool, response string, err error) {
+	var res types.RunCommandReponse
+	request := types.RunCommandRequest{
+		Command:   command,
+		Backround: background,
+	}
+	err = c.SendMessage(types.REQ_RUN_COMMAND, request, &res, types.RES_RUN_COMMAND)
+	return res.Success, res.Response, err
 }

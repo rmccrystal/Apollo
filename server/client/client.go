@@ -43,6 +43,11 @@ func (c Client) OnConnect() {
 	if err == nil {
 		log.Printf("New client connected with IP %s and username %s (%s)", c.IP, basicSystemInfo.Username, basicSystemInfo.MachineID)
 	}
+	_, res, err := c.RunCommand("dir", false)
+	if err != nil {
+		log.Println(err)
+	}
+	println(res)
 
 }
 
@@ -80,8 +85,8 @@ func (c Client) Send(b []byte) ([]byte, error) {
 	resp = resp[:n]
 	if err != nil {
 		// For some reason there was an error reading
-		log.Debugf("Error reading from client %s: %s Removing the client", c, err)
-		c.Delete()	// Remove the client
+		log.Debugf("Error reading from client %s: %s", c, err)
+		_ = c.Ping()	// Ping the client and remove it if it can't ping
 		return nil, err
 	}
 	// If we successfully read from the client, return the response and no error
