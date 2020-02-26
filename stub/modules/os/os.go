@@ -3,7 +3,7 @@ package os
 import (
 	"fmt"
 	"os/exec"
-	"strings"
+	"runtime"
 )
 
 /*
@@ -11,23 +11,21 @@ import (
  * if `background` is true the command will be ran in the background and it will be immidately returned
  */
 func RunCommand(command string, background bool) (success bool, response string) {
-	commandArgs := strings.Split(command, " ")
-	if len(commandArgs) == 0 {
-		return false, "error: no command specified"
-	}
 	var cmd *exec.Cmd
-	if len(commandArgs) == 1 {
-		cmd = exec.Command(commandArgs[0])
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/C", command)
+	} else if runtime.GOOS == "linux" {
+		cmd = exec.Command("sh", "-c", command)
 	} else {
-		cmd = exec.Command(commandArgs[0], commandArgs[1:]...)
+		return false, fmt.Sprintf("invalid os: %s", runtime.GOOS)
 	}
-	if !background {	// If we're not running the background, run the command and get its output
+	if !background { // If we're not running the background, run the command and get its output
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			return false, err.Error()
 		}
 		return true, fmt.Sprintf("%s", out)
-	} else {
+	} else {	// Run the command in the background
 		err := cmd.Start()
 		if err != nil {
 			return false, err.Error()

