@@ -30,7 +30,7 @@ func messageLoop(conn net.Conn) error {	// Note: Only returns an error if there 
 										// Will not return an error due to malformed data
 	buffer := make([]byte, 4096)
 	n, err := conn.Read(buffer)
-	buffer = buffer[:n]
+	buffer = Decrypt(buffer[:n])
 	log.Printf("read %v", buffer)
 	if err != nil {
 		log.Printf("error reading: %s", err)
@@ -38,7 +38,7 @@ func messageLoop(conn net.Conn) error {	// Note: Only returns an error if there 
 	}
 	packet := handlePacket(buffer)
 	log.Printf("sending %v", packet)
-	_, err = conn.Write(packet)		// Write the response we get from message.HandleMessage()
+	_, err = conn.Write(Encrypt(packet))		// Write the response we get from message.HandleMessage()
 	if err != nil {		// Return an error if we can't write to the connection
 		return err
 	}

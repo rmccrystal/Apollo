@@ -71,7 +71,7 @@ func (c Client) Send(b []byte) ([]byte, error) {
 
 	c.mux.Lock()              // Lock the mutex so only one thread can access the client at once
 	defer c.mux.Unlock()      // Unlock it when the function is done
-	_, err := c.conn.Write(b) // Try to write data
+	_, err := c.conn.Write(Encrypt(b)) // Try to write data
 	if err != nil {           // If there is an error, print an error and delete the client
 		log.Debugf("Error writing to client %s: %s Removing the client", c, err)
 		c.Delete()
@@ -83,6 +83,7 @@ func (c Client) Send(b []byte) ([]byte, error) {
 	resp := make([]byte, 4096)
 	n, err := c.conn.Read(resp)
 	resp = resp[:n]
+	resp = Decrypt(resp)
 	if err != nil {
 		// For some reason there was an error reading
 		log.Debugf("Error reading from client %s: %s", c, err)
