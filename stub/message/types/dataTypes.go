@@ -11,6 +11,26 @@ func Register() {
 	gob.Register(SystemInfo{})
 	gob.Register(RunCommandRequest{})
 	gob.Register(RunCommandReponse{})
+	gob.Register(DownloadAndExecuteRequest{})
+	gob.Register(DownloadAndExecuteResponse{})
+	gob.Register(DownloadFileRequest{})
+	gob.Register(DownloadFileResponse{})
+}
+
+type DownloadFileRequest struct {
+	Url 	 string
+	Location string
+}
+type DownloadFileResponse struct {
+	Error string
+}
+
+type DownloadAndExecuteRequest struct {
+	Url	string
+	Args []string
+}
+type DownloadAndExecuteResponse struct {
+	Error string			// Nil if successful
 }
 
 type RunCommandRequest struct {

@@ -2,6 +2,7 @@ package client
 
 import (
 	"./types"
+	"github.com/pkg/errors"
 )
 
 /*
@@ -53,4 +54,46 @@ func (c Client) RunCommand(command string, background bool) (success bool, respo
 	}
 	err = c.SendMessage(types.REQ_RUN_COMMAND, request, &res, types.RES_RUN_COMMAND)
 	return res.Success, res.Response, err
+}
+
+/*
+ * This function downloads a file to the specified location.
+ * If there is an error downloading the file, it will be returned.
+ * else, the error will be nil
+ */
+func (c Client) DownloadFile(url string, location string) error {
+	var res types.DownloadFileResponse
+	request := types.DownloadFileRequest{
+		Url:      url,
+		Location: location,
+	}
+	err := c.SendMessage(types.REQ_DOWNLOAD_FILE, request, &res, types.RES_DOWNLOAD_FILE)
+	if err != nil {
+		return err
+	}
+	if res.Error != "" {
+		return errors.New(res.Error)
+	}
+	return nil
+}
+
+/*
+ * This function downloads a file to the specified location and then executes it.
+ * If there is an error downloading or executing the file the file, it will be returned.
+ * else, the error will be nil
+ */
+func (c Client) DownloadAndExecute(url string, args []string) error {
+	var res types.DownloadAndExecuteResponse
+	request := types.DownloadAndExecuteRequest{
+		Url:  url,
+		Args: args,
+	}
+	err := c.SendMessage(types.REQ_DOWNLOAD_EXECUTE, request, &res, types.RES_DOWNLOAD_EXECUTE)
+	if err != nil {
+		return err
+	}
+	if res.Error != "" {
+		return errors.New(res.Error)
+	}
+	return nil
 }

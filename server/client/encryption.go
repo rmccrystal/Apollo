@@ -33,6 +33,9 @@ func Encrypt(data []byte) []byte {
 }
 
 func Decrypt(data []byte) []byte {
+	if len(data) == 0 {
+		return nil
+	}
 	password := Password
 	key := []byte(_createHash(password))
 	block, err := aes.NewCipher(key)

