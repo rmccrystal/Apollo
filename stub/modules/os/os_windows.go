@@ -158,7 +158,7 @@ func LogicalProcessors() int {
 }
 
 /*
- * Returns the CPU arcitecture
+ * Returns the CPU architecture
  */
 func Arcitecture() string {
 	return runtime.GOARCH

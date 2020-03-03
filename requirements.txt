@@ -1,5 +1,6 @@
-github.com/StackExchange/wmi
-github.com/shirou/gopsutil/cpu
-github.com/shirou/gopsutil/mem
+go get -t github.com/StackExchange/wmi
+go get -t github.com/shirou/gopsutil/cpu
+go get -t github.com/shirou/gopsutil/mem
+go get -t github.com/denisbrodbeck/machineid
 
-github.com/sirupsen/logrus
+go get -t github.com/sirupsen/logrus

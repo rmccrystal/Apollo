@@ -63,9 +63,6 @@ func handlePacket(buffer []byte) []byte {
 	} else {	// Else we must decode the buffer
 		buff := bytes.NewBuffer(buffer[1:]) // Don't use the first element of the buffer
 		decoder := gob.NewDecoder(buff)
-		var msg interface{} // The structured message being sent
-
-		fmt.Printf("%s", msg)	// TODO: remove
 		responseID, response = message.HandleMessageWithPayload(messageID, decoder)
 	}
 
