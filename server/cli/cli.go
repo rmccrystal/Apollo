@@ -95,10 +95,7 @@ func ListenRaw(port int, password string) error {
 func NewCli(writer io.ReadWriteCloser, enableColor bool) error {
 	cli := Cli{Writer:writer,au:aurora.NewAurora(enableColor)}
 	if enableColor { // Set the title to Apollo only if enableColor is true
-		err := cli.writeString("\033]0;Apollo\007")
-		if err != nil {
-			return err
-		}
+		cli.SetTitle("Apollo")
 	}
 	CliList[cli] = true	// Add the client to the client list
 	go cli.messageLoop()			// Start the message loop
@@ -123,11 +120,13 @@ func (c Cli) messageLoop() {
 		}
 		cmd := args[0]			// The cmd is the first element of the args
 		args = args[1:]			// Remove the first element from the args
+		commandFound := false	// Remains false if the command isn't found
 		for _, command := range commandList {
 			// If the command has the same Name as the inputted command or its aliases
 			if command.Name == strings.ToLower(cmd) || stringInSlice(strings.ToLower(cmd), command.Aliases) {
-				if len(args) < command.MinArgs {	// if we have too little args
-					if command.Usage != "" {	// If we have a usage
+				commandFound = true
+				if len(args) < command.MinArgs { // if we have too little args
+					if command.Usage != "" { // If we have a usage
 						c.Printf("Usage: %s", command.Usage)
 					} else {
 						c.Printf("%s takes a minimum of %d args", command.Name, command.MinArgs)
@@ -135,20 +134,27 @@ func (c Cli) messageLoop() {
 					break
 				}
 				c.Printf(command.Function(c, args)) // Run the command
+				break
 			}
+		}
+		if !commandFound {
+			c.Printf("%s: command not found. Use 'help' to list available commands", cmd)
 		}
 	}
 }
 
 func (c Cli) onConnect() {
-	c.Printf(`
-    :::     :::::::::   ::::::::  :::        :::        :::::::: 
-  :+: :+:   :+:    :+: :+:    :+: :+:        :+:       :+:    :+:
- +:+   +:+  +:+    +:+ +:+    +:+ +:+        +:+       +:+    +:+
-+#++:++#++: +#++:++#+  +#+    +:+ +#+        +#+       +#+    +:+
-+#+     +#+ +#+        +#+    +#+ +#+        +#+       +#+    +#+
-#+#     #+# #+#        #+#    #+# #+#        #+#       #+#    #+#
-###     ### ###         ########  ########## ########## ######## `)
+	c.Printf(c.au.Black(`
+
+      :::     :::::::::   ::::::::  :::        :::        :::::::: 
+    :+: :+:   :+:    :+: :+:    :+: :+:        :+:       :+:    :+:
+   +:+   +:+  +:+    +:+ +:+    +:+ +:+        +:+       +:+    +:+
+  +#++:++#++: +#++:++#+  +#+    +:+ +#+        +#+       +#+    +:+
+  +#+     +#+ +#+        +#+    +#+ +#+        +#+       +#+    +#+
+  #+#     #+# #+#        #+#    #+# #+#        #+#       #+#    #+#
+  ###     ### ###         ########  ########## ########## ######## 
+`).BgWhite().String())
+	c.Printf("")	// print a blank new line
 }
 
 

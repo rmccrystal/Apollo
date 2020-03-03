@@ -55,11 +55,12 @@ func (c Cli) remove() {
  */
 func (c Cli) Printf(format string, args ...interface{}) {
 	text := fmt.Sprintf(format, args...)
-	if len(text) == 0 {
-		return
-	}
-	if text[len(text)-1] != '\n' {	// Add a newline if it's not there
-		text = text + "\n"
+	if len(text) != 0 {		// If there is text
+		if text[len(text)-1] != '\n' {	// Add a newline if it's not there
+			text = text + "\n"
+		}
+	} else { // If there is no text, print a newline
+		text = "\n"
 	}
 	text = strings.ReplaceAll(text, "\n", "\r\n")		// Replaces newlines with \r\n
 	err := c.writeString(text)
@@ -98,5 +99,5 @@ func (c Cli) Clear() {
  * Sets the title of the cli only if color is set to true
  */
 func (c Cli) SetTitle(title string) {
-
+	c.Print(fmt.Sprintf("\033]0;%s\007", title))
 }

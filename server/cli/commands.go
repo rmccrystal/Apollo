@@ -70,19 +70,19 @@ var commandList = []command{
 		Function: func(c Cli, args []string) string {
 			id, err := strconv.Atoi(args[0])
 			if err != nil {
-				return fmt.Sprintf("Error: %s is not a number", args[0])
+				return c.au.Red(fmt.Sprintf("Error: %s is not a number", args[0])).String()
 			}
 			client := client.GetClientById(id)
 			if client == nil {
-				return fmt.Sprintf("Client with ID %d not found", id)
+				return c.au.Red(fmt.Sprintf("Client with ID %d not found", id)).String()
 			}
 			start := time.Now()
 			err = client.Ping()
 			if err != nil {
-				return fmt.Sprintf("Error pinging client %s", client.String())
+				return c.au.Red(fmt.Sprintf("%s not connected", client.String())).String()
 			}
 			ms := time.Since(start).Nanoseconds()/1e6
-			return fmt.Sprintf("Client %s responded in %dms", client.String(), ms)
+			return c.au.Green(fmt.Sprintf("Client %s responded in %dms", client.String(), ms)).String()
 		},
 	},
 }
@@ -92,15 +92,11 @@ var commandList = []command{
  * Takes an aurora object as an argument for color support
  */
 func (c command) description(au aurora.Aurora) string {
-	aliasesString := ""
-	if len(c.Aliases) > 0 {
-		aliasesString = fmt.Sprintf(" (aliases: %v)", c.Aliases)
-	}
 	usageString := ""
 	if len(c.Usage) > 0 {
-		usageString = fmt.Sprintf("\n\t└─Usage: %s", c.Usage)
+		usageString = au.Gray(11, fmt.Sprintf("\n\t└─Usage: %s", c.Usage)).String()
 	}
-	text := au.Sprintf("%s%s: %s%s", au.Bold(c.Name), au.Gray(11, aliasesString), c.Help, usageString)
+	text := au.Sprintf("%s: %s%s", au.Bold(c.Name), au.Gray(15, c.Help), usageString)
 	return text
 }
 
@@ -108,7 +104,11 @@ func getHelpString(c Cli, args []string) string {
 	if len(args) >= 1 {		// If we have more than one args, find the command and print its help
 		for _, command := range commandList {
 			if command.Name == strings.ToLower(args[0]) {
-				return command.description(c.au)
+				aliasesString := ""				// Only print aliases if we get help for specific command
+				if len(command.Aliases) > 0 {
+					aliasesString = fmt.Sprintf("\n\t─ Aliases: %v", command.Aliases)
+				}
+				return command.description(c.au) + aliasesString
 			}
 		}
 		return fmt.Sprintf("Unknown command: %s", args[0])
