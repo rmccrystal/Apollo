@@ -55,6 +55,9 @@ func (c Cli) remove() {
  */
 func (c Cli) Printf(format string, args ...interface{}) {
 	text := fmt.Sprintf(format, args...)
+	if len(text) == 0 {
+		return
+	}
 	if text[len(text)-1] != '\n' {	// Add a newline if it's not there
 		text = text + "\n"
 	}
@@ -78,4 +81,15 @@ func (c Cli) Print(data ...interface{}) {
 		log.Debugf("error writing to cli: %s", err)
 		c.remove()
 	}
+}
+
+/*
+ * Clears the cli by sending a bunch of newlines
+ */
+func (c Cli) Clear() {
+	text := ""
+	for i := 1; i<=50; i++ {
+		text += "\n"
+	}
+	c.Print(text)
 }

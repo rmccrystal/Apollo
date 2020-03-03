@@ -119,7 +119,6 @@ func (c Cli) messageLoop() {
 		// Split the text into args separated by spaces
 		args := strings.Fields(text)
 		if len(args) == 0 {		// Continue if we get a length of 0 for our args
-			log.Debug("args length zero")
 			continue
 		}
 		cmd := args[0]			// The cmd is the first element of the args
@@ -131,7 +130,7 @@ func (c Cli) messageLoop() {
 					c.Printf("%s takes a minimum of %d args.\n\n%s",
 						command.Name, command.MinArgs, command.Help)
 				}
-				c.Printf(command.Function(args)) // Run the command
+				c.Printf(command.Function(c, args)) // Run the command
 			}
 		}
 	}
