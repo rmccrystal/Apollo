@@ -220,3 +220,17 @@ func getClientByMachineId(id string) (client *Client, connected bool) {
 	}
 	return nil, false
 }
+
+/*
+ * Gets a client by the client ID
+ * If there are no clients with that ID, it will return nil
+ * Note: this will return disconnected clients
+ */
+func GetClientById(id int) *Client {
+	for client := range Clients {
+		if client.ID == id {
+			return client
+		}
+	}
+	return nil
+}

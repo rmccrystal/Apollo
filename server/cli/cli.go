@@ -127,8 +127,12 @@ func (c Cli) messageLoop() {
 			// If the command has the same Name as the inputted command or its aliases
 			if command.Name == strings.ToLower(cmd) || stringInSlice(strings.ToLower(cmd), command.Aliases) {
 				if len(args) < command.MinArgs {	// if we have too little args
-					c.Printf("%s takes a minimum of %d args.\n\n%s",
-						command.Name, command.MinArgs, command.Help)
+					if command.Usage != "" {	// If we have a usage
+						c.Printf("Usage: %s", command.Usage)
+					} else {
+						c.Printf("%s takes a minimum of %d args", command.Name, command.MinArgs)
+					}
+					break
 				}
 				c.Printf(command.Function(c, args)) // Run the command
 			}

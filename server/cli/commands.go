@@ -4,7 +4,9 @@ import (
 	"../client"
 	"fmt"
 	"github.com/logrusorgru/aurora"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // The command type
@@ -57,6 +59,30 @@ var commandList = []command{
 				str += "\n"
 			}
 			return str
+		},
+	},
+	{
+		Name:     "ping",
+		Aliases:  nil,
+		MinArgs:  1,
+		Help:     "Pings a client and returns the response time",
+		Usage:    "ping (clientID)",
+		Function: func(c Cli, args []string) string {
+			id, err := strconv.Atoi(args[0])
+			if err != nil {
+				return fmt.Sprintf("Error: %s is not a number", args[0])
+			}
+			client := client.GetClientById(id)
+			if client == nil {
+				return fmt.Sprintf("Client with ID %d not found", id)
+			}
+			start := time.Now()
+			err = client.Ping()
+			if err != nil {
+				return fmt.Sprintf("Error pinging client %s", client.String())
+			}
+			ms := time.Since(start).Nanoseconds()/1e6
+			return fmt.Sprintf("Client %s responded in %dms", client.String(), ms)
 		},
 	},
 }
