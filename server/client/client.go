@@ -48,9 +48,10 @@ func (c *Client) OnConnect() {
 				return
 			} else { // We have the client in our client list but they are disconnected
 				log.Debugf("Client %s is already in the client list", c.String())
-				newConn := c.conn		// Preserve the connection we have now but use the data from the cached client
+				conn := c.conn // Preserve the connection we have now but use the data from the cached client
 				c = client
-				c.conn = newConn
+				c.conn = conn
+				c.IsConnected = true
 			}
 		}
 	} else {
