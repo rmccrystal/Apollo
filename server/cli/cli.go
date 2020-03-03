@@ -28,7 +28,7 @@ type Cli struct {
  * TODO: This code is really messy. Take some time to clean it up
  */
 func ListenRaw(port int, password string) error {
-	log.Debugf("Attempting to listen fro Clis on port %d", port)
+	log.Debugf("Attempting to listen for Clis on port %d", port)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func ListenRaw(port int, password string) error {
 			log.Printf("New Cli connected: %s", c.RemoteAddr())
 			// If we get here we got a successful connection with the right password
 			err = c.SetReadDeadline(time.Now().Add(2 * time.Hour))		// Two hour timeout
-			if err := c.SetReadDeadline(time.Now().Add(60 * time.Second)); err != nil {
+			if err != nil {
 				log.Debugf("error setting read deadline: %s", err)
 				c.Close()
 				return

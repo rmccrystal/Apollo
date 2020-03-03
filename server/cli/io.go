@@ -93,3 +93,10 @@ func (c Cli) Clear() {
 	}
 	c.Print(text)
 }
+
+/*
+ * Sets the title of the cli only if color is set to true
+ */
+func (c Cli) SetTitle(title string) {
+
+}

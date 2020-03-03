@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"../client"
 	"fmt"
 	"github.com/logrusorgru/aurora"
 	"strings"
@@ -19,7 +20,7 @@ type command struct {
 var commandList = []command{
 	{
 		Name:     "clear",
-		Aliases:  []string{"c", "cl"},
+		Aliases:  []string{"cls"},
 		MinArgs:  0,
 		Help:     "Clears the screen",
 		Function: func(c Cli, args []string) string {
@@ -35,6 +36,27 @@ var commandList = []command{
 		Function: func(c Cli, args []string) string {
 			c.remove()
 			return ""
+		},
+	},
+	{
+		Name:     "clients",
+		Aliases:  []string{"list", "bots", "c"},
+		MinArgs:  0,
+		Help:     "Lists the connected clients",
+		Function: func(c Cli, args []string) string {
+			if len(client.Clients) == 0 {
+				return "No clients"
+			}
+			str := ""
+			for client, connected := range client.Clients {
+				if !connected {
+					str += c.au.Gray(11, fmt.Sprintf("%s (not connected)", client.String())).String()
+				} else {
+					str += client.String()
+				}
+				str += "\n"
+			}
+			return str
 		},
 	},
 }

@@ -10,7 +10,7 @@ import (
 func main() {
 	types.Register()	// Register all of the types
 	for {
-		err := 	networking.Connect("localhost", 4422)
+		err := 	networking.Connect("192.168.0.18", 4422)
 		if err == nil {
 			// No errors, we can exit the process
 			return

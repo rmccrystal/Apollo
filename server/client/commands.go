@@ -3,6 +3,7 @@ package client
 import (
 	"./types"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 /*
@@ -10,10 +11,11 @@ import (
  * If the ping is successful, the function will return nil
  * If it is not, it will return an error and the client will be removed
  */
-func (c Client) Ping() error {
+func (c *Client) Ping() error {
 	err := c.SendMessage(types.REQ_PING, nil, nil, types.RES_PING)
 	if err != nil {
 		c.Delete()
+		log.Debugf("Error pinging client %s", c)
 	}
 	return err
 }
@@ -21,7 +23,7 @@ func (c Client) Ping() error {
 /*
  * Returns a struct containing basic system info of the client
  */
-func (c Client) GetBasicSystemInfo() (types.BasicSystemInfo, error) {
+func (c *Client) GetBasicSystemInfo() (types.BasicSystemInfo, error) {
 	var response types.BasicSystemInfo
 	err := c.SendMessage(types.REQ_BASIC_SYSTEM_INFO, nil, &response, types.RES_BASIC_SYSTEM_INFO)
 	if err == nil {	// if there is no error, cache the basic system info
@@ -33,7 +35,7 @@ func (c Client) GetBasicSystemInfo() (types.BasicSystemInfo, error) {
 /*
  * Returns a struct containing all system info of the client
  */
-func (c Client) GetSystemInfo() (types.SystemInfo, error) {
+func (c *Client) GetSystemInfo() (types.SystemInfo, error) {
 	var response types.SystemInfo
 	err := c.SendMessage(types.REQ_SYSTEM_INFO, nil, &response, types.RES_SYSTEM_INFO)
 	if err == nil {	// if there is no error, cache the system info
@@ -46,7 +48,7 @@ func (c Client) GetSystemInfo() (types.SystemInfo, error) {
  * Runs a console command
  * if `background` is true the command will be ran in the background and it will be immidately returned
  */
-func (c Client) RunCommand(command string, background bool) (success bool, response string, err error) {
+func (c *Client) RunCommand(command string, background bool) (success bool, response string, err error) {
 	var res types.RunCommandReponse
 	request := types.RunCommandRequest{
 		Command:   command,
@@ -61,7 +63,7 @@ func (c Client) RunCommand(command string, background bool) (success bool, respo
  * If there is an error downloading the file, it will be returned.
  * else, the error will be nil
  */
-func (c Client) DownloadFile(url string, location string) error {
+func (c *Client) DownloadFile(url string, location string) error {
 	var res types.DownloadFileResponse
 	request := types.DownloadFileRequest{
 		Url:      url,
@@ -82,7 +84,7 @@ func (c Client) DownloadFile(url string, location string) error {
  * If there is an error downloading or executing the file the file, it will be returned.
  * else, the error will be nil
  */
-func (c Client) DownloadAndExecute(url string, args []string) error {
+func (c *Client) DownloadAndExecute(url string, args []string) error {
 	var res types.DownloadAndExecuteResponse
 	request := types.DownloadAndExecuteRequest{
 		Url:  url,
