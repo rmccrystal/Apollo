@@ -84,7 +84,7 @@ func (c Cli) Print(data ...interface{}) {
 }
 
 /*
- * Clears the cli by sending a bunch of newlines
+ * Clears the cli by sending the clear control sequence character
  */
 func (c Cli) Clear() {
 	c.Print("\033[2J")
