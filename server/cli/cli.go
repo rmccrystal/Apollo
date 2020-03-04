@@ -162,7 +162,11 @@ func (c Cli) onConnect() {
   #+#     #+# #+#        #+#    #+# #+#        #+#       #+#    #+#
   ###     ### ###         ########  ########## ########## ######## 
 `).BgWhite().String())
-	c.Printf("") // print a blank new line
+	c.Printf("\n") // print a blank new line
+	go func() {
+		c.SetTitle(fmt.Sprintf("Apollo - %d", len(client.Clients)))		// Update the title every second
+		time.Sleep(time.Second)
+	}()
 }
 
 // Util functions

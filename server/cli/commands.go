@@ -77,10 +77,10 @@ var commandList = []command{
 				start := time.Now()
 				err := client.Ping()
 				if err != nil {
-					c.Printf(c.au.Red(fmt.Sprintf("%s not connected", client.String())).String())
+					return c.au.Red(fmt.Sprintf("%s not connected", client.String())).String()
 				}
 				ms := time.Since(start).Nanoseconds()/1e6
-				c.Printf(c.au.Green(fmt.Sprintf("Client %s responded in %dms", client.String(), ms)).String())
+				return c.au.Green(fmt.Sprintf("Client %s responded in %dms", client.String(), ms)).String()
 			}
 			return ""
 		},
