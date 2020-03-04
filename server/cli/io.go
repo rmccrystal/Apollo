@@ -34,8 +34,8 @@ func (c Cli) read() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	str = strings.ReplaceAll(str, "\r", "") 	// Remove \r in the string
-	str = strings.ReplaceAll(str, "\n", "") 	// Remove \r in the string
+	str = strings.ReplaceAll(str, "\r", "") // Remove \r in the string
+	str = strings.ReplaceAll(str, "\n", "") // Remove \r in the string
 	return str, nil
 }
 
@@ -55,14 +55,13 @@ func (c Cli) remove() {
  */
 func (c Cli) Printf(format string, args ...interface{}) {
 	text := fmt.Sprintf(format, args...)
-	if len(text) != 0 {		// If there is text
-		if text[len(text)-1] != '\n' {	// Add a newline if it's not there
-			text = text + "\n"
-		}
-	} else { // If there is no text, print a newline
-		text = "\n"
+	if len(text) == 0 { // If there is no text
+		return
 	}
-	text = strings.ReplaceAll(text, "\n", "\r\n")		// Replaces newlines with \r\n
+	if text[len(text)-1] != '\n' { // If the end of the text is not a newline
+		text += "\n" // Add a newline
+	}
+	text = strings.ReplaceAll(text, "\n", "\r\n") // Replaces newlines with \r\n
 	err := c.writeString(text)
 	if err != nil {
 		log.Debugf("error writing to cli: %s", err)
@@ -88,11 +87,7 @@ func (c Cli) Print(data ...interface{}) {
  * Clears the cli by sending a bunch of newlines
  */
 func (c Cli) Clear() {
-	text := ""
-	for i := 1; i<=50; i++ {
-		text += "\n"
-	}
-	c.Print(text)
+	c.Print("\033[2J")
 }
 
 /*

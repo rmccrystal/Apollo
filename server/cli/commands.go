@@ -4,7 +4,6 @@ import (
 	"../client"
 	"fmt"
 	"github.com/logrusorgru/aurora"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -16,7 +15,7 @@ type command struct {
 	MinArgs  int                   // The number of args required for this command. Note that 0 args means just the command
 	Help     string                // The help string for the command which will be printed if there is an error or the help command is used
 	Usage	 string				   // The usage for the command which will be printed out if the command is invalid or the help command is used
-	Function func(Cli, []string) string // The function which will be ran. This function takes client refrence and the args and returns the output
+	Function func(Cli, []string) string // The function which will be ran. This function takes cli refrence and the args and returns the output
 }
 
 var commandList = []command{
@@ -61,6 +60,8 @@ var commandList = []command{
 			return str
 		},
 	},
+
+
 	{
 		Name:     "ping",
 		Aliases:  nil,
@@ -68,23 +69,23 @@ var commandList = []command{
 		Help:     "Pings a client and returns the response time",
 		Usage:    "ping (clientID)",
 		Function: func(c Cli, args []string) string {
-			id, err := strconv.Atoi(args[0])
+			clients, err := getClientsFromCapture(args[0])
 			if err != nil {
-				return c.au.Red(fmt.Sprintf("Error: %s is not a number", args[0])).String()
+				return c.au.Red(err).String()
 			}
-			client := client.GetClientById(id)
-			if client == nil {
-				return c.au.Red(fmt.Sprintf("Client with ID %d not found", id)).String()
+			for _, client := range clients {
+				start := time.Now()
+				err := client.Ping()
+				if err != nil {
+					c.Printf(c.au.Red(fmt.Sprintf("%s not connected", client.String())).String())
+				}
+				ms := time.Since(start).Nanoseconds()/1e6
+				c.Printf(c.au.Green(fmt.Sprintf("Client %s responded in %dms", client.String(), ms)).String())
 			}
-			start := time.Now()
-			err = client.Ping()
-			if err != nil {
-				return c.au.Red(fmt.Sprintf("%s not connected", client.String())).String()
-			}
-			ms := time.Since(start).Nanoseconds()/1e6
-			return c.au.Green(fmt.Sprintf("Client %s responded in %dms", client.String(), ms)).String()
+			return ""
 		},
 	},
+
 }
 
 /*
@@ -106,7 +107,7 @@ func getHelpString(c Cli, args []string) string {
 			if command.Name == strings.ToLower(args[0]) {
 				aliasesString := ""				// Only print aliases if we get help for specific command
 				if len(command.Aliases) > 0 {
-					aliasesString = fmt.Sprintf("\n\t─ Aliases: %v", command.Aliases)
+					aliasesString = aurora.Gray(11, fmt.Sprintf("\n\t└─Aliases: %v", command.Aliases)).String()
 				}
 				return command.description(c.au) + aliasesString
 			}
@@ -123,12 +124,12 @@ func getHelpString(c Cli, args []string) string {
 
 // This function is here so we can add the help command which refrences itself
 func InitCommands() {
-	commandList = append(commandList, command{
+	commandList = append([]command{{
 		Name:     "help",
 		Aliases:  []string{"h", "?"},
 		MinArgs:  0,
 		Help:	  "Prints out help for all commands or a specified command",
 		Usage:    "help [command]",
 		Function: getHelpString,
-	},)
+	}}, commandList...)
 }

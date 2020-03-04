@@ -1,23 +1,26 @@
 package cli
 
 import (
+	"../client"
 	"bufio"
 	"fmt"
 	"github.com/logrusorgru/aurora"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
+	"strconv"
 	"strings"
 	"time"
 )
 
 const commandPrefix = "> "
 
-var CliList = make(map[Cli]bool)	// CliList set
+var CliList = make(map[Cli]bool) // CliList set
 
 type Cli struct {
 	Writer io.ReadWriteCloser
-	au	   aurora.Aurora	// This is to enable and disable the colors
+	au     aurora.Aurora // This is to enable and disable the colors
 }
 
 /*
@@ -35,7 +38,7 @@ func ListenRaw(port int, password string) error {
 	}
 	log.Printf("Listening for clis on port %d", port)
 
-	defer lis.Close()       // Close the listener when we're done
+	defer lis.Close() // Close the listener when we're done
 	for {
 		conn, err := lis.Accept()
 		log.Debugf("New cli connecting: %s", conn.RemoteAddr())
@@ -55,7 +58,7 @@ func ListenRaw(port int, password string) error {
 				return
 			}
 			passwordAttempt, err := bufio.NewReader(c).ReadString('\n')
-			passwordAttempt = strings.ReplaceAll(passwordAttempt, "\r", "")	// Remove \r and the last element in the string
+			passwordAttempt = strings.ReplaceAll(passwordAttempt, "\r", "") // Remove \r and the last element in the string
 			passwordAttempt = strings.ReplaceAll(passwordAttempt, "\n", "")
 			if err != nil {
 				log.Debugf("error reading from cli connection: %s", err)
@@ -65,13 +68,13 @@ func ListenRaw(port int, password string) error {
 			if passwordAttempt != password {
 				log.Debugf("Cli client %s used the wrong password: %s", c.RemoteAddr(), passwordAttempt)
 				c.Write([]byte("Incorrect password."))
-				_, _ = c.Read(nil)		// Wait for input and close the conn
+				_, _ = c.Read(nil) // Wait for input and close the conn
 				c.Close()
 				return
 			}
 			log.Printf("New Cli connected: %s", c.RemoteAddr())
 			// If we get here we got a successful connection with the right password
-			err = c.SetReadDeadline(time.Now().Add(2 * time.Hour))		// Two hour timeout
+			err = c.SetReadDeadline(time.Now().Add(2 * time.Hour)) // Two hour timeout
 			if err != nil {
 				log.Debugf("error setting read deadline: %s", err)
 				c.Close()
@@ -93,19 +96,18 @@ func ListenRaw(port int, password string) error {
  * If the enableColor arg is true, colors will be enabled
  */
 func NewCli(writer io.ReadWriteCloser, enableColor bool) error {
-	cli := Cli{Writer:writer,au:aurora.NewAurora(enableColor)}
+	cli := Cli{Writer: writer, au: aurora.NewAurora(enableColor)}
 	if enableColor { // Set the title to Apollo only if enableColor is true
 		cli.SetTitle("Apollo")
 	}
-	CliList[cli] = true	// Add the client to the client list
-	go cli.messageLoop()			// Start the message loop
+	CliList[cli] = true  // Add the client to the client list
+	go cli.messageLoop() // Start the message loop
 	return nil
 }
 
 func (c Cli) messageLoop() {
 	c.onConnect()
 	for {
-
 		c.Print(commandPrefix)
 		text, err := c.read()
 		if err != nil {
@@ -115,32 +117,38 @@ func (c Cli) messageLoop() {
 		}
 		// Split the text into args separated by spaces
 		args := strings.Fields(text)
-		if len(args) == 0 {		// Continue if we get a length of 0 for our args
+		if len(args) == 0 { // Continue if we get a length of 0 for our args
 			continue
 		}
-		cmd := args[0]			// The cmd is the first element of the args
-		args = args[1:]			// Remove the first element from the args
-		commandFound := false	// Remains false if the command isn't found
-		for _, command := range commandList {
-			// If the command has the same Name as the inputted command or its aliases
-			if command.Name == strings.ToLower(cmd) || stringInSlice(strings.ToLower(cmd), command.Aliases) {
-				commandFound = true
-				if len(args) < command.MinArgs { // if we have too little args
-					if command.Usage != "" { // If we have a usage
-						c.Printf("Usage: %s", command.Usage)
-					} else {
-						c.Printf("%s takes a minimum of %d args", command.Name, command.MinArgs)
-					}
-					break
+		cmd := args[0]  // The cmd is the first element of the args
+		args = args[1:] // Remove the first element from the args
+		c.handleCommand(cmd, args)
+	}
+}
+
+/*
+ * Handles the specified `cmd` with arguments `args`
+ * Returns if the command was successfully handled or not
+ */
+func (c Cli) handleCommand(cmd string, args []string) bool {
+	for _, command := range commandList {
+		// If the command has the same Name as the inputted command or its aliases
+		if command.Name == strings.ToLower(cmd) || stringInSlice(strings.ToLower(cmd), command.Aliases) {
+			if len(args) < command.MinArgs { // if we have too little args
+				if command.Usage != "" { // If we have a usage
+					c.Printf("Usage: %s", command.Usage)
+				} else {
+					c.Printf("%s takes a minimum of %d args", command.Name, command.MinArgs)
 				}
-				c.Printf(command.Function(c, args)) // Run the command
-				break
+				return false // We have too little args, return false
 			}
-		}
-		if !commandFound {
-			c.Printf("%s: command not found. Use 'help' to list available commands", cmd)
+			c.Printf(command.Function(c, args)) // Run the command
+			return true                         // The command was successful, return true
 		}
 	}
+
+	c.Printf("%s: command not found. Use 'help' to list available commands", cmd)
+	return false
 }
 
 func (c Cli) onConnect() {
@@ -154,12 +162,8 @@ func (c Cli) onConnect() {
   #+#     #+# #+#        #+#    #+# #+#        #+#       #+#    #+#
   ###     ### ###         ########  ########## ########## ######## 
 `).BgWhite().String())
-	c.Printf("")	// print a blank new line
+	c.Printf("") // print a blank new line
 }
-
-
-
-
 
 // Util functions
 func stringInSlice(a string, list []string) bool {
@@ -169,4 +173,31 @@ func stringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+/*
+ * Returns a list of clients from a capture
+ * A capture is either a client number or "all"
+ * TODO: Add a capture to select multiple client IDs
+ */
+func getClientsFromCapture(capture string) ([]*client.Client, error) {
+	var clients []*client.Client
+
+	if strings.ToLower(capture) == "all" {	// If we want to use all clients
+		clients = client.GetOnlineClients()	// Get all online clients
+		if len(clients) == 0 {		// If there are no online clients
+			return nil, errors.New("No clients are online")
+		}
+	} else {		// Else get the client by the ID
+		id, err := strconv.Atoi(capture)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("Error: %s is not a number", capture))
+		}
+		cl := client.GetClientById(id)
+		if cl == nil {
+			return nil, errors.New(fmt.Sprintf("Client with ID %d not found", id))
+		}
+		clients = append(clients, cl)
+	}
+	return clients, nil
 }

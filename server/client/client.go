@@ -12,6 +12,16 @@ import (
 	"time"
 )
 
+func GetOnlineClients() []*Client {
+	var clients []*Client
+	for client, connected := range Clients {
+		if connected {
+			clients = append(clients, client)
+		}
+	}
+	return clients
+}
+
 var Clients = make(map[*Client]bool) // Client set
 
 type Client struct {
