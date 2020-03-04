@@ -46,7 +46,7 @@ func HandleMessageWithPayload(messageID byte, decoder *gob.Decoder) (responseID 
 			log.Printf("error decoding: %s", err)
 			return types.ERR_GOB, nil
 		}
-		res.Success, res.Response = modules.RunCommand(req.Command, req.Backround)
+		res.Success, res.Response = modules.RunCommand(req.Command, req.Args, req.Backround)
 		return types.RES_RUN_COMMAND, res
 	}
 

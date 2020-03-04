@@ -20,6 +20,16 @@ type command struct {
 
 var commandList = []command{
 	{
+		Name:     "test",
+		Aliases:  nil,
+		MinArgs:  0,
+		Help:     "",
+		Usage:    "",
+		Function: func(c Cli, args []string) string {
+			return fmt.Sprintln(args)
+		},
+	},
+	{
 		Name:     "clear",
 		Aliases:  []string{"cls"},
 		MinArgs:  0,
@@ -61,7 +71,7 @@ var commandList = []command{
 		},
 	},
 
-
+	// Clinet commands
 	{
 		Name:     "ping",
 		Aliases:  nil,
@@ -73,14 +83,35 @@ var commandList = []command{
 			if err != nil {
 				return c.au.Red(err).String()
 			}
-			for _, client := range clients {
+			for _, cl := range clients {
 				start := time.Now()
-				err := client.Ping()
+				err := cl.Ping()
 				if err != nil {
-					return c.au.Red(fmt.Sprintf("%s not connected", client.String())).String()
+					return c.au.Red(fmt.Sprintf("%s not connected", cl.String())).String()
 				}
 				ms := time.Since(start).Nanoseconds()/1e6
-				return c.au.Green(fmt.Sprintf("Client %s responded in %dms", client.String(), ms)).String()
+				return c.au.Green(fmt.Sprintf("Client %s responded in %dms", cl.String(), ms)).String()
+			}
+			return ""
+		},
+	},
+	{
+		Name:     "exec",
+		Aliases:  []string{"run", "cmd"},
+		MinArgs:  2,
+		Help:     "Runs the specified command on the client and prints the output",
+		Usage:    "exec (client) (command) [args]",
+		Function: func(c Cli, args []string) string {
+			clients, err := getClientsFromCapture(args[0])
+			if err != nil {
+				return c.au.Red(err).String()
+			}
+			for _, cl := range clients {
+				_, resp, err := cl.RunCommand(args[1], args[2:], false)
+				if err != nil {
+					c.Printf(c.au.Red(fmt.Sprintf("Error running command on %s: %s", cl, err)).String())
+				}
+				c.Printf("%s", resp)
 			}
 			return ""
 		},

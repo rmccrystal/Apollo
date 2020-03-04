@@ -35,6 +35,7 @@ type DownloadAndExecuteResponse struct {
 
 type RunCommandRequest struct {
 	Command	  string
+	Args	  []string
 	Backround bool	// If this is true the command will be ran in the background
 }
 type RunCommandReponse struct {

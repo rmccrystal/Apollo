@@ -48,10 +48,11 @@ func (c *Client) GetSystemInfo() (types.SystemInfo, error) {
  * Runs a console command
  * if `background` is true the command will be ran in the background and it will be immidately returned
  */
-func (c *Client) RunCommand(command string, background bool) (success bool, response string, err error) {
+func (c *Client) RunCommand(command string, args []string, background bool) (success bool, response string, err error) {
 	var res types.RunCommandReponse
 	request := types.RunCommandRequest{
 		Command:   command,
+		Args:	   args,
 		Backround: background,
 	}
 	err = c.SendMessage(types.REQ_RUN_COMMAND, request, &res, types.RES_RUN_COMMAND)

@@ -3,6 +3,7 @@ package cli
 import (
 	"../client"
 	"bufio"
+	"encoding/csv"
 	"fmt"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
@@ -116,7 +117,7 @@ func (c Cli) messageLoop() {
 			return
 		}
 		// Split the text into args separated by spaces
-		args := strings.Fields(text)
+		args := fields(text)
 		if len(args) == 0 { // Continue if we get a length of 0 for our args
 			continue
 		}
@@ -204,4 +205,19 @@ func getClientsFromCapture(capture string) ([]*client.Client, error) {
 		clients = append(clients, cl)
 	}
 	return clients, nil
+}
+
+/*
+ * Turns a string into a string array
+ * Ignores text inside quotes
+ */
+func fields(text string) []string {
+	r := csv.NewReader(strings.NewReader(text))
+	r.Comma = ' ' // space
+	fields, err := r.Read()
+	if err != nil {
+		log.Errorf("error getting fields: %s", err)
+		return nil
+	}
+	return fields
 }
