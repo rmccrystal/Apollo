@@ -13,7 +13,7 @@ func main() {
 	cli.InitCommands()
 
 	go func() {
-		err := cli.ListenRaw(23, "password420")
+		err := cli.ListenRaw(2300, "password420")
 		if err != nil {
 			log.Errorf("error listening for cli: %s", err)
 		}

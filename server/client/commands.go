@@ -2,7 +2,7 @@ package client
 
 import (
 	"./types"
-	"github.com/pkg/errors"
+	"errors"
 	log "github.com/sirupsen/logrus"
 )
 

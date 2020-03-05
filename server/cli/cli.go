@@ -4,9 +4,9 @@ import (
 	"../client"
 	"bufio"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"github.com/logrusorgru/aurora"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
@@ -212,6 +212,9 @@ func getClientsFromCapture(capture string) ([]*client.Client, error) {
  * Ignores text inside quotes
  */
 func fields(text string) []string {
+	if len(text) == 0 {	// Return nil if there are no fields
+		return nil
+	}
 	r := csv.NewReader(strings.NewReader(text))
 	r.Comma = ' ' // space
 	fields, err := r.Read()
