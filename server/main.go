@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./cli"
-	"./client/types"
-	"./networking"
+	"apollo/server/cli"
+	"apollo/server/networking"
+	"apollo/stub/message/types"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -1,7 +1,7 @@
 package networking
 
 import (
-	"../client"
+	"apollo/server/client"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net"

@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"../client"
+	"apollo/server/client"
 	"bufio"
 	"encoding/csv"
 	"errors"

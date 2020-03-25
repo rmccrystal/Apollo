@@ -1,16 +1,16 @@
 package main
 
 import (
-        "./message/types"
-        "./networking"
-        "log"
-        "time"
+	"log"
+	"apollo/stub/message/types"
+	"apollo/stub/networking"
+	"time"
 )
 
 func main() {
-	types.Register()	// Register all of the types
+	types.Register() // Register all of the types
 	for {
-		err := 	networking.Connect("localhost", 4422)
+		err := networking.Connect("localhost", 4422)
 		if err == nil {
 			// No errors, we can exit the process
 			return
