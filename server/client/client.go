@@ -1,7 +1,7 @@
 package client
 
 import (
-	"apollo/stub/message/types"
+	"apollo/types"
 	"bytes"
 	"encoding/gob"
 	"errors"

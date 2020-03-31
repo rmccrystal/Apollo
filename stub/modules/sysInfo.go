@@ -1,8 +1,8 @@
 package modules
 
 import (
-	"../message/types"
-	"./os"
+	"apollo/stub/modules/os"
+	"apollo/types"
 	"time"
 )
 

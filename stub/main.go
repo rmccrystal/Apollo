@@ -1,9 +1,9 @@
 package main
 
 import (
-	"log"
-	"apollo/stub/message/types"
 	"apollo/stub/networking"
+	"apollo/types"
+	"log"
 	"time"
 )
 

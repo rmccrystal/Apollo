@@ -1,8 +1,8 @@
 package networking
 
 import (
-	"../message"
-	"../message/types"
+	"apollo/stub/message"
+	"apollo/types"
 	"bytes"
 	"encoding/gob"
 	"fmt"

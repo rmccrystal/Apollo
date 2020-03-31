@@ -1,8 +1,8 @@
 package message
 
 import (
-	"../modules"
-	"./types"
+	"apollo/stub/modules"
+	"apollo/types"
 	"encoding/gob"
 	"log"
 )

@@ -1,7 +1,7 @@
 package client
 
 import (
-	"apollo/stub/message/types"
+	"apollo/types"
 	"errors"
 	log "github.com/sirupsen/logrus"
 )

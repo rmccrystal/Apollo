@@ -3,7 +3,7 @@ package main
 import (
 	"apollo/server/cli"
 	"apollo/server/networking"
-	"apollo/stub/message/types"
+	"apollo/types"
 	log "github.com/sirupsen/logrus"
 )
 

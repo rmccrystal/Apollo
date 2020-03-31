@@ -1,8 +1,8 @@
 package modules
 
 import (
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"math/rand"
 	"net/http"
