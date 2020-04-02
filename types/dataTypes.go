@@ -2,6 +2,9 @@ package types
 
 import (
 	"encoding/gob"
+	"encoding/json"
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -18,7 +21,7 @@ func Register() {
 }
 
 type DownloadFileRequest struct {
-	Url 	 string
+	Url      string
 	Location string
 }
 type DownloadFileResponse struct {
@@ -26,52 +29,91 @@ type DownloadFileResponse struct {
 }
 
 type DownloadAndExecuteRequest struct {
-	Url	string
+	Url  string
 	Args []string
 }
 type DownloadAndExecuteResponse struct {
-	Error string			// Nil if successful
+	Error string // Nil if successful
 }
 
 type RunCommandRequest struct {
-	Command	  string
-	Args	  []string
-	Backround bool	// If this is true the command will be ran in the background
+	Command   string
+	Args      []string
+	Backround bool // If this is true the command will be ran in the background
 }
 type RunCommandReponse struct {
-	Success	 bool
+	Success  bool
 	Response string
 }
 
 // Basic system info
 type BasicSystemInfo struct {
-	OS				string
-	InstallDate		time.Time
-	Username		string
-	Administrator	bool
-	Language		int
-	MachineID		string
+	OS            string
+	InstallDate   time.Time
+	Username      string
+	Administrator bool
+	Language      int
+	MachineID     string
 }
 
 type SystemInfo struct {
-	Username		string
-	InstallDate		time.Time
-	OS				string
-	OSVersion		string
-	Administrator	bool
-	ClientVersion	int
-	DeviceName		string
-	Language		int
+	Username      string
+	InstallDate   time.Time
+	OS            string
+	OSVersion     string
+	Administrator bool
+	ClientVersion int
+	DeviceName    string
+	Language      int
 
-	MBRam			int		// MB of ram installed
-	CoreCount		int
-	LogicalProcessorCount	int
-	Architecture	string
-	CPU				string
+	MBRam                 int // MB of ram installed
+	CoreCount             int
+	LogicalProcessorCount int
+	Architecture          string
+	CPU                   string
 
-	GPU				string
+	GPU string
 
-	Device			string		// Info about device name and model
+	Device string // Info about device name and model
 
-	MachineID		string
+	MachineID string
+}
+
+func (info SystemInfo) String() string {
+	// In Windows, The CPU info comes in json format so here we will attempt to decode it
+	cpuInfo := info.CPU
+	if strings.Contains(strings.ToLower(info.OS), "windows") {
+		var data map[string]interface{}
+		err := json.Unmarshal([]byte(cpuInfo), &data)
+		if err == nil {
+			if val, ok := data["modelName"]; ok {
+				cpuInfo = fmt.Sprintf("%v", val)
+			}
+		}
+	}
+
+	return fmt.Sprintf(`Username: %s
+Time since install: %s
+OS: %s
+OS Version: %s
+Administrator: %t
+Device Name: %s
+Ram: %dMB
+Cores: %d
+Architecture: %s
+CPU: %s
+GPU: %s
+Device Name: %s`,
+		info.Username,
+		time.Now().Sub(info.InstallDate).String(),
+		info.OS,
+		info.OSVersion,
+		info.Administrator,
+		info.DeviceName,
+		info.MBRam,
+		info.CoreCount,
+		info.Architecture,
+		cpuInfo,
+		info.GPU,
+		info.Device)
 }

