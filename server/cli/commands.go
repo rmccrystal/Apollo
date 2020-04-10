@@ -17,20 +17,10 @@ type command struct {
 	MinArgs  int                        // The number of args required for this command. Note that 0 args means just the command
 	Help     string                     // The help string for the command which will be printed if there is an error or the help command is used
 	Usage    string                     // The usage for the command which will be printed out if the command is invalid or the help command is used
-	Function func(Cli, []string) string // The function which will be ran. This function takes cli refrence and the args and returns the output
+	Function func(Cli, []string) string // The function which will be ran. This function takes cli reference and the args and returns the output
 }
 
 var commandList = []command{
-	{
-		Name:    "test",
-		Aliases: nil,
-		MinArgs: 0,
-		Help:    "",
-		Usage:   "",
-		Function: func(c Cli, args []string) string {
-			return fmt.Sprintln(args)
-		},
-	},
 	{
 		Name:    "clear",
 		Aliases: []string{"cls"},
