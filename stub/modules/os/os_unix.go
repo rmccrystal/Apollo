@@ -68,7 +68,7 @@ func Username() string {
  * TODO: This could be made better by not attempting to access a physical drive
  */
 func Administrator() bool {
-
+	return os.Getuid() == 0
 }
 
 // doesn't work on linux
